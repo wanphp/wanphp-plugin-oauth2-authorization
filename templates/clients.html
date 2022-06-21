@@ -1,0 +1,192 @@
+{% extends "admin/common/base.html" %}
+{% block styles %}
+<link rel="stylesheet" href="/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
+<link rel="stylesheet" href="/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
+{% endblock %}
+
+{% block container %}
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">{{title}}</h3>
+
+    <div class="card-tools">
+      <button type="button" class="btn btn-tool" data-toggle="modal" data-target="#modal-addClient"><i class="fas fa-plus-circle"></i></button>
+    </div>
+  </div>
+  <div class="modal fade" id="modal-addClient" style="display: none;" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">客户端</h4>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">×</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="clientForm" action="/admin/clients" method="POST" novalidate="novalidate">
+            <div class="form-group">
+              <label for="name">名称</label>
+              <input name="name" type="text" class="form-control" placeholder="客户端名称" id="name" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label for="client_id">APPID</label>
+              <input name="client_id" type="text" class="form-control" placeholder="客户端ID" id="client_id" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label for="redirect_uri">回调地址</label>
+              <input name="redirect_uri" type="text" class="form-control" placeholder="回调地址" id="redirect_uri" autocomplete="off">
+            </div>
+            <div class="form-group">
+              <label for="client_ip">客户端IP</label>
+              <input name="client_ip" type="text" class="form-control" placeholder="授权客户端IP" id="client_ip" autocomplete="off">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-default" data-dismiss="modal">关闭</button>
+          <button type="submit" form="clientForm" class="btn btn-primary">提交</button>
+        </div>
+      </div>
+      <!-- /.modal-content -->
+    </div>
+    <!-- /.modal-dialog -->
+  </div>
+  <div class="card-body">
+    <table id="clientsData" class="table table-bordered table-hover">
+      <thead>
+      <tr>
+        <th>客户端名称</th>
+        <th>客户端ID</th>
+        <th>客户端密钥</th>
+        <th>回调地址</th>
+        <th>客户端IP</th>
+        <th>操作</th>
+      </tr>
+      </thead>
+    </table>
+  </div>
+  <!-- /.card-body -->
+</div>
+<!-- /.card -->
+{% endblock %}
+
+{% block scripts %}
+<script src="/plugins/jquery-validation/jquery.validate.min.js"></script>
+<script src="/plugins/jquery-validation/additional-methods.min.js"></script>
+<!-- DataTables -->
+<script src="/plugins/datatables/jquery.dataTables.min.js"></script>
+<script src="/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
+<script src="/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
+<script src="/plugins/datatables-responsive/js/responsive.bootstrap4.min.js"></script>
+<script src="/js/dataTable.defaults.js"></script>
+<script type="text/javascript">
+  $(document).ready(function () {
+    var datatables = $('#clientsData').DataTable({
+      serverSide: false,
+      ajax: {
+        url: "/admin/clients",
+        type: 'GET',
+      },
+      rowId: 'id',
+      columns: [
+        {data: "name"},
+        {data: "client_id"},
+        {data: "client_secret"},
+        {data: "redirect_uri", defaultContent: ''},
+        {
+          data: "client_ip", render: function (data, type, row, meta) {
+            return data.join('<br>');
+          }
+        },
+        {
+          data: "op", defaultContent: '<button type="button" class="btn btn-tool edit"><i class="fas fa-edit"></i></button>' +
+            '<button type="button" class="btn btn-tool del"><i class="fas fa-trash-alt"></i></button>'
+        }
+      ]
+    });
+
+    $('#clientsData tbody').on('click', 'button', function () {
+      var data = datatables.row($(this).parents('tr')).data();
+      console.log(data);
+      if ($(this).hasClass('edit')) {
+        $('#clientForm').attr('action', '/admin/clients/' + data.id);
+        $('#clientForm').attr('method', 'PUT');
+        $("#clientForm input[name='name']").val(data.name);
+        $("#clientForm input[name='client_id']").val(data.client_id);
+        $("#clientForm input[name='redirect_uri']").val(data.redirect_uri);
+        $("#clientForm input[name='client_ip']").val(data.client_ip.join(','));
+        $('#modal-addClient').modal('show');
+      }
+      if ($(this).hasClass('del')) {
+        var deltr = $(this).parents('tr');
+        dialog('删除客户端', '是否确认删除客户端', function () {
+          $.ajax({
+            url: '/admin/clients/' + data.id,
+            type: 'POST',
+            headers: {"X-HTTP-Method-Override": "DELETE"},
+            dataType: 'json',
+            success: function (data) {
+              datatables.row(deltr).remove().draw(false);
+              Swal.fire({icon: 'success', title: '删除成功！', showConfirmButton: false, timer: 1500});
+            },
+            error: errorDialog
+          });
+        });
+      }
+    });
+  });
+</script>
+<script type="text/javascript">
+  $(document).ready(function () {
+    $('#clientForm').validate({
+      submitHandler: function (e) {
+        var fromdata = new FormData(e);
+        $.ajax({
+          url: $(e).attr('action'),
+          data: fromdata,
+          type: 'POST',
+          beforeSend: function (xhr) {
+            xhr.setRequestHeader("X-HTTP-Method-Override", $(e).attr('method'));
+          },
+          cache: false,
+          contentType: false,
+          processData: false,
+          dataType: 'json',
+          success: function (json) {
+            location.reload();
+          },
+          error: errorDialog
+        });
+        return false;
+      },
+      rules: {
+        name: {
+          required: true
+        }
+      },
+      messages: {
+        name: {
+          required: "请输入客户端名称"
+        }
+      },
+      errorElement: 'span',
+      errorPlacement: function (error, element) {
+        error.addClass('invalid-feedback');
+        element.closest('.form-group').append(error);
+      },
+      highlight: function (element, errorClass, validClass) {
+        $(element).addClass('is-invalid');
+      },
+      unhighlight: function (element, errorClass, validClass) {
+        $(element).removeClass('is-invalid');
+      }
+    });
+
+    $('#modal-addClient').on('hidden.bs.modal', function () {
+      $('#clientForm')[0].reset();
+      $('#clientForm').attr('action', '/admin/clients');
+      $('#clientForm').attr('method', 'POST');
+    });
+  });
+</script>
+{% endblock %}

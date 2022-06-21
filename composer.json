@@ -1,0 +1,40 @@
+{
+  "name": "wanphp/plugins-oauth2-authorization",
+  "type": "wanphp-plugin",
+  "description": "OAuth 2.0 认证服务器扩展插件",
+  "keywords": [
+    "OAuth 2.0",
+    "authorization",
+    "wanphp-plugin"
+  ],
+  "homepage": "https://www.wanphp.com",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "火子",
+      "email": "wanphp@outlook.com"
+    }
+  ],
+  "require": {
+    "wanphp/installers": "*",
+    "wanphp/libray-slim": "^1.0.0",
+    "wanphp/libray-mysql": "^1.1.0",
+    "wanphp/libray-weixin": "^1.0.0",
+    "league/oauth2-server": "^8.0",
+    "bacon/bacon-qr-code": "^2.0.0"
+  },
+  "require-dev": {
+    "zircote/swagger-php": "^3.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Wanphp\\Plugins\\OAuth2Authorization\\": "/src"
+    }
+  },
+  "repositories": {
+    "packagist": {
+      "type": "composer",
+      "url": "https://mirrors.aliyun.com/composer/"
+    }
+  }
+}

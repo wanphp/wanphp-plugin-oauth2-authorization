@@ -1,0 +1,245 @@
+openapi: 3.0.0
+info:
+  title: 'OAuth 2.0 授权服务器扩展插件'
+  description: 'OAuth 2.0 授权服务器扩展插件，插件不能单独运行'
+  version: 1.0.0
+paths:
+  /auth/accessToken:
+    post:
+      tags:
+        - Auth
+      summary: 客户端通过授权码请求访问令牌
+      operationId: userAccessToken
+      requestBody:
+        description: 获取access_token
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                grant_type:
+                  description: 授权模式，值固定为：authorization_code
+                  type: string
+                  example: authorization_code
+                client_id:
+                  description: '客户端ID,由服务端分配'
+                  type: string
+                client_secret:
+                  description: '客户端 secret,由服务端分配'
+                  type: string
+                redirect_uri:
+                  description: '使用与authorize请求相同的 URI。'
+                  type: string
+                code:
+                  description: Authorize接口请求获取的登录凭证（code）。
+                  type: string
+              type: object
+      responses:
+        '201':
+          description: 获取AccessToken成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { properties: { datas: { properties: { token_type: { type: string }, expires_in: { type: integer }, access_token: { type: string }, refresh_token: { type: string } }, type: object } }, type: object }
+                  - { $ref: '#/components/schemas/Success' }
+        '400':
+          description: 请求失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/authorize:
+    get:
+      tags:
+        - Auth
+      summary: 公众号用户登录，获取授权码或访问令牌
+      operationId: userAuthorize
+      parameters:
+        -
+          name: response_type
+          in: query
+          description: 授权类型，必选项，值固定为：code或token
+          required: true
+          schema:
+            type: string
+        -
+          name: client_id
+          in: query
+          description: '客户端ID,由服务端分配'
+          required: true
+          schema:
+            type: string
+        -
+          name: redirect_uri
+          in: query
+          description: '重定向URI，可选项，不填写时默认预先注册的重定向URI， 请使用 urlEncode 对链接进行处理'
+          schema:
+            type: string
+        -
+          name: scope
+          in: query
+          description: 授权范围，可选项，以空格分隔
+          schema:
+            type: string
+        -
+          name: state
+          in: query
+          description: CSRF令牌，可选项，但强烈建议使用，应将该值存储与用户会话中，以便在返回时验证.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 获取Code成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: 请求失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/passwordAccessToken:
+    post:
+      tags:
+        - Auth
+      summary: 用户账号密码，获取访问令牌
+      operationId: passwordAccessToken
+      requestBody:
+        description: 获取access_token
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                grant_type:
+                  description: 授权模式，值固定为：password
+                  type: string
+                  example: password
+                client_id:
+                  description: '客户端ID,由服务端分配'
+                  type: string
+                client_secret:
+                  description: '客户端 secret,由服务端分配'
+                  type: string
+                scope:
+                  description: 授权范围，可选项，以空格分隔
+                  type: string
+                username:
+                  description: 用户账号
+                  type: string
+                password:
+                  description: 用户密码
+                  type: string
+              type: object
+      responses:
+        '201':
+          description: 获取AccessToken成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { properties: { datas: { properties: { token_type: { type: string }, expires_in: { type: integer }, access_token: { type: string }, refresh_token: { type: string } }, type: object } }, type: object }
+                  - { $ref: '#/components/schemas/Success' }
+        '400':
+          description: 请求失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /auth/refreshAccessToken:
+    post:
+      tags:
+        - Auth
+      summary: 刷新访问令牌
+      operationId: refreshAccessToken
+      requestBody:
+        description: 刷新access_token
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                grant_type:
+                  description: 授权类型，必选项，值固定为：refresh_token
+                  type: string
+                  example: refresh_token
+                client_id:
+                  description: '客户端ID,由服务端分配'
+                  type: string
+                client_secret:
+                  description: '客户端 secret,由服务端分配'
+                  type: string
+                scope:
+                  description: 权限范围，可选项，以空格分隔
+                  type: string
+                refresh_token:
+                  description: 刷新令牌
+                  type: string
+              type: object
+      responses:
+        '201':
+          description: 刷新AccessToken成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - { properties: { datas: { properties: { token_type: { type: string }, expires_in: { type: integer }, access_token: { type: string }, refresh_token: { type: string } }, type: object } }, type: object }
+                  - { $ref: '#/components/schemas/Success' }
+        '400':
+          description: 请求失败
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Error:
+      title: 出错提示
+      type: object
+    Success:
+      title: 成功提示
+      type: object
+    ClientsEntity:
+      title: 客户端
+      description: 客户端数据结构
+      required:
+        - name
+        - client_id
+        - client_secret
+      properties:
+        id:
+          description: ID
+          type: integer
+          format: int32
+          nullable: true
+        name:
+          description: 客户端名称
+          type: string
+        client_id:
+          description: 客户端ID
+          type: string
+        client_secret:
+          description: 客户端密钥
+          type: string
+        redirect_uri:
+          description: 客户端回调URL
+          type: string
+        client_ip:
+          description: 客户端授权IP
+          type: array
+          items: {  }
+        scopes:
+          description: 授权范围
+          type: array
+          items: {  }
+        confidential:
+          description: 是否机密
+          type: integer
+      type: object
+tags:
+  -
+    name: Auth
+    description: '认证授权,获取访问令牌'
