@@ -34,11 +34,12 @@ class WePublicUserHandler
         ];
         //检查数据库是否存在用户数据
         $user_id = $public->get('id', ['openid' => $accessToken['openid']]);
-        if ($user_id) {
+        if ($user_id) {// 已存在公众号关注信息
           if ($data['unionid']) $uid = $user->get('id', ['unionid' => $data['unionid']]);
           else $uid = $user->get('id', ['id' => $user_id]);
           if ($uid) {
             //更新用户
+            if ($uid != $user_id) $data['id'] = $user_id;
             $user->update($data, ['id' => $uid]);
           } else {
             //添加用户
@@ -46,10 +47,25 @@ class WePublicUserHandler
             $user->insert($data);
           }
         } else {
-          //添加公众号数据
-          $data['id'] = $public->insert(['openid' => $weUser['openid']]);
-          //添加用户
-          $user_id = $user->insert($data);
+          // 不存在公众号关注信息
+          //检查用户是否通过小程序等，存储到本地
+          if ($data['unionid']) {
+            $uid = $user->get('id', ['unionid' => $data['unionid']]);
+            if ($uid) {
+              $user->update($data, ['id' => $uid]);
+              $user_id = $uid;
+            } else {
+              //添加用户
+              $user_id = $user->insert($data);
+            }
+            //添加公众号数据
+            $public->insert(['id' => $user_id, 'openid' => $weUser['openid']]);
+          } else {
+            //添加公众号数据
+            $data['id'] = $public->insert(['openid' => $weUser['openid']]);
+            //添加用户
+            $user_id = $user->insert($data);
+          }
         }
       }
     }
