@@ -13,10 +13,11 @@ return function (App $app, Middleware $PermissionMiddleware, Middleware $OAuthSe
   })->addMiddleware($PermissionMiddleware);
 
   $app->group('/auth', function (Group $group) {
-    $group->get('/authorize', \Wanphp\Plugins\OAuth2Authorization\Application\Auth\AuthorizeApi::class);
+    $group->map(['GET', 'POST'], '/authorize', \Wanphp\Plugins\OAuth2Authorization\Application\Auth\AuthorizeApi::class);
     $group->post('/accessToken', \Wanphp\Plugins\OAuth2Authorization\Application\Auth\AccessTokenApi::class);
     $group->post('/passwordAccessToken', \Wanphp\Plugins\OAuth2Authorization\Application\Auth\PasswordAccessTokenApi::class);
     $group->post('/refreshAccessToken', \Wanphp\Plugins\OAuth2Authorization\Application\Auth\RefreshAccessTokenApi::class);
+    $group->map(['GET', 'POST'], '/qrlogin', \Wanphp\Plugins\OAuth2Authorization\Application\Auth\QrLoginApi::class);
   });
 };
 

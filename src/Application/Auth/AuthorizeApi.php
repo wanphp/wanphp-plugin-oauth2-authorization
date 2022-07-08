@@ -102,9 +102,11 @@ class AuthorizeApi extends OAuth2Api
               unset($_SESSION['login_user_id']);
             } else {
               $data = $this->getFormData();
+              if (!isset($data['account']) || $data['account'] == '') return $this->respondWithError('帐号为绑定手机号或邮箱！');
+              if (!isset($data['password']) || $data['password'] == '') return $this->respondWithError('密码不能为空！');
               $password = md5(trim($data['password']));
 
-              $user = $this->user->get('id,tel,password,salt,status', ['OR' => ['tel' => $data['tel'], 'email' => $data['email']]]);
+              $user = $this->user->get('id,tel,password,salt,status', ['OR' => ['tel' => $data['account'], 'email' => $data['account']]]);
               if ($user) {
                 if ($user['password'] !== md5(SHA1($user['salt'] . $password))) {
                   return $this->respondWithError('帐号密码不正确,请核实！');
@@ -127,10 +129,12 @@ class AuthorizeApi extends OAuth2Api
             $_SESSION['authRequest'] = serialize($authRequest);
 
             $code = Crypto::encrypt(session_id(), $this->encryptionKey);
-            $renderer = new ImageRenderer(new RendererStyle(400), new SvgImageBackEnd());
+            $renderer = new ImageRenderer(new RendererStyle(480), new SvgImageBackEnd());
             $writer = new Writer($renderer);
-            $data['loginQr'] = $writer->writeString($this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/qrlogin?tk=' . $code);
-            return $this->respondView('@oauth2-authorization/login.html');
+            $data['loginQr'] = $writer->writeString($this->request->getUri()->getScheme() . '://' . $this->request->getUri()->getHost() . '/auth/qrlogin?tk=' . $code);
+            //return $this->respondView('@oauth2-authorization/login.html', $data);
+            //使用自定义模板
+            return $this->respondView('oauth2/login.html', $data);
         }
       }
 

@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css">
   <link rel="stylesheet" href="/plugins/toastr/toastr.min.css">
   <!-- Theme style -->
-  <link rel="stylesheet" href="/adminlte/dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="/adminlte/css/adminlte.min.css">
   <style>
     #modal-qrLogin svg {
       max-width: 100%;
@@ -28,12 +28,12 @@
 <div class="login-box">
   <div class="card">
     <div class="card-header text-center">
-      <h1 class="h1">登录管理系统</h1>
+      <h1 class="h1">授权登录系统</h1>
     </div>
     <div class="card-body login-card-body">
       <form id="loginForm" action="" method="post" novalidate="novalidate">
         <div class="form-group">
-          <label for="acc">登录帐号</label>
+          <label for="acc">授权登录帐号</label>
           <div class="input-group mb-3">
             <input name="account" type="text" class="form-control" placeholder="输入登录帐号" id="acc" autocomplete="off">
             <div class="input-group-append">
@@ -44,7 +44,7 @@
           </div>
         </div>
         <div class="form-group">
-          <label for="passwd">帐号密码</label>
+          <label for="passwd">授权帐号密码</label>
           <div class="input-group mb-3">
             <input name="password" type="password" class="form-control" placeholder="请输入帐号密码" id="passwd">
             <div class="input-group-append">
@@ -57,7 +57,7 @@
       </form>
       <div class="social-auth-links text-center mt-2 mb-3">
         <button type="submit" class="btn btn-primary btn-block" form="loginForm"><i class="fas fa-key"></i> 登录</button>
-        <button class="btn btn-block btn-success"><i class="fab fa-weixin mr-2"></i> 微信登录</button>
+        <button class="btn btn-block btn-success"><i class="fab fa-weixin mr-2"></i> 使用微信授权登录</button>
       </div>
     </div>
     <!-- /.login-card-body -->
@@ -65,10 +65,10 @@
 </div>
 <!-- /.login-box -->
 <div class="modal fade" id="modal-qrLogin" style="display: none;" aria-hidden="true">
-  <div class="modal-dialog modal-sm">
+  <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">微信扫一扫登录</h4>
+        <h4 class="modal-title">微信扫一扫授权登录</h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">×</span>
         </button>
@@ -96,7 +96,7 @@
 <!-- Toastr -->
 <script src="/plugins/toastr/toastr.min.js"></script>
 <!-- AdminLTE App -->
-<script src="/adminlte/dist/js/adminlte.min.js"></script>
+<script src="/adminlte/js/adminlte.min.js"></script>
 <script src="/js/ua-parser.min.js"></script>
 <script type="text/javascript">
   $(document).ready(function () {
@@ -109,7 +109,7 @@
     $('#modal-qrLogin').on('shown.bs.modal', function () {
       timer = setInterval(function () {
         checkNum++;
-        $.post('/qrlogin', function (data) {
+        $.post('/auth/qrlogin', function (data) {
           if (data.res == 'OK') {
             $('body').prepend('<form id="login" action="" method="post"></form>');
             $('#login').submit();
@@ -139,7 +139,7 @@
     $.validator.setDefaults({
       submitHandler: function (e) {
         $.ajax({
-          url: '/login',
+          url: '',
           data: new FormData(e),
           type: 'POST',
           cache: false,

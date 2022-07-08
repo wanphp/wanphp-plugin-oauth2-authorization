@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Application\Actions\Common;
+namespace Wanphp\Plugins\OAuth2Authorization\Application\Auth;
 
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -17,8 +17,8 @@ class QrLoginApi extends Api
 
   public function __construct(ContainerInterface $container, WeChatBase $weChatBase)
   {
-    $this->public = $container->get('Wanphp\Plugins\Weixin\Domain\UserInterface');;
-    $this->user = $container->get('Wanphp\Plugins\Weixin\Domain\PublicInterface');;
+    $this->user = $container->get('Wanphp\Plugins\Weixin\Domain\UserInterface');;
+    $this->public = $container->get('Wanphp\Plugins\Weixin\Domain\PublicInterface');;
     $this->weChatBase = $weChatBase;
   }
 
@@ -27,7 +27,7 @@ class QrLoginApi extends Api
    */
   protected function action(): Response
   {
-    if ($this->isPost()) {
+    if ($this->request->getMethod() == 'POST') {
       if (isset($_SESSION['login_user_id']) && is_numeric($_SESSION['login_user_id'])) return $this->respondWithData(['res' => 'OK']);
       else return $this->respondWithError('尚未授权！');
     } else {
