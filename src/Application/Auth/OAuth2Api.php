@@ -48,15 +48,13 @@ abstract class OAuth2Api extends Api
   public function __construct(ContainerInterface $container)
   {
     $this->database = $container->get(Database::class);
-    $redis = $container->get('redis');
-    $this->redis = new Client($redis['parameters'], $redis['options']);
     $config = $container->get('oauth2Config');
+    $this->redis = new Client($config['redis']['parameters'], $config['redis']['options']);
     $this->user = $container->get('Wanphp\Plugins\Weixin\Domain\UserInterface');
 
     // 初始化存储库
     $clientRepository = new ClientRepository($this->database);
     $scopeRepository = new ScopeRepository();
-    $this->redis->select($config['authRedis']);//选择库
     $accessTokenRepository = new AccessTokenRepository($this->redis);
 
     // 私钥与加密密钥
