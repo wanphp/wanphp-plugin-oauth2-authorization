@@ -82,7 +82,7 @@ class AuthorizeApi extends OAuth2Api
     if ($response_type == 'token') $this->implicit();
     try {
       //使用微信公众号授权登录
-      if (!in_array($queryParams['state'], ['code', 'token']) && str_contains($this->request->getServerParams()['HTTP_USER_AGENT'], 'MicroMessenger')) {
+      if (isset($queryParams['state']) && !in_array($queryParams['state'], ['code', 'token']) && str_contains($this->request->getServerParams()['HTTP_USER_AGENT'], 'MicroMessenger')) {
         // 验证 HTTP 请求，并返回 authRequest 对象
         $authRequest = $this->server->validateAuthorizationRequest($this->request);
         // 此时应将 authRequest 对象序列化后存在当前会话(session)中

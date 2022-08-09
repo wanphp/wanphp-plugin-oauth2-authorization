@@ -27,6 +27,7 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
   public function getClientEntity($clientIdentifier): ClientEntityInterface|ClientEntity|null
   {
     $client = $this->get('client_id,name,redirect_uri,confidential', ['client_id' => $clientIdentifier]);
+    if (!$client) return null;
     if (isset($_GET['redirect_uri']) && str_starts_with($_GET['redirect_uri'], $client['redirect_uri'])) $client['redirect_uri'] = $_GET['redirect_uri'];
     if ($_SERVER['REQUEST_METHOD'] == 'POST') {
       $post = json_decode(file_get_contents('php://input'), true);
@@ -34,8 +35,7 @@ class ClientRepository extends BaseRepository implements ClientRepositoryInterfa
         if (isset($post['redirect_uri']) && str_starts_with($post['redirect_uri'], $client['redirect_uri'])) $client['redirect_uri'] = $post['redirect_uri'];
       }
     }
-    if ($client) return new ClientEntity($client);
-    else return null;
+    return new ClientEntity($client);
   }
 
   /**

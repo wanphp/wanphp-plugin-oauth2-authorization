@@ -13,6 +13,7 @@ use Psr\Container\ContainerExceptionInterface;
 use Psr\Container\NotFoundExceptionInterface;
 use Wanphp\Libray\Mysql\BaseInterface;
 use Wanphp\Libray\Mysql\Database;
+use Wanphp\Libray\Slim\Setting;
 use Wanphp\Plugins\OAuth2Authorization\Application\Api;
 use Wanphp\Plugins\OAuth2Authorization\Repositories\AccessTokenRepository;
 use Wanphp\Plugins\OAuth2Authorization\Repositories\AuthCodeRepository;
@@ -48,7 +49,7 @@ abstract class OAuth2Api extends Api
   public function __construct(ContainerInterface $container)
   {
     $this->database = $container->get(Database::class);
-    $config = $container->get('oauth2Config');
+    $config = $container->get(Setting::class)->get('oauth2Config');
     $this->redis = new Client($config['redis']['parameters'], $config['redis']['options']);
     $this->user = $container->get('Wanphp\Plugins\Weixin\Domain\UserInterface');
 
