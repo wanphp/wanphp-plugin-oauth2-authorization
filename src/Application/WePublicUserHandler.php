@@ -32,6 +32,15 @@ class WePublicUserHandler
           'headimgurl' => $weUser['headimgurl'],
           'sex' => $weUser['sex']
         ];
+        $userinfo = $weChatBase->getUserInfo($weUser['openid']);
+        if ($userinfo['subscribe']) {//用户已关注公众号
+          $pubData = [
+            'subscribe' => $userinfo['subscribe'],
+            'tagid_list' => $userinfo['tagid_list'],
+            'subscribe_time' => $userinfo['subscribe_time'],
+            'subscribe_scene' => $userinfo['subscribe_scene']
+          ];
+        }
         //检查数据库是否存在用户数据
         $user_id = $public->get('id', ['openid' => $accessToken['openid']]);
         if ($user_id) {// 已存在公众号关注信息
@@ -46,6 +55,7 @@ class WePublicUserHandler
             $data['id'] = $user_id;
             $user->insert($data);
           }
+          if (isset($pubData)) $public->update($pubData, ['id' => $user_id]);
         } else {
           // 不存在公众号关注信息
           //检查用户是否通过小程序等，存储到本地
@@ -59,10 +69,18 @@ class WePublicUserHandler
               $user_id = $user->insert($data);
             }
             //添加公众号数据
-            $public->insert(['id' => $user_id, 'openid' => $weUser['openid']]);
+            if (isset($pubData)) {
+              $pubData['id'] = $user_id;
+              $pubData['openid'] = $weUser['openid'];
+            } else {
+              $pubData = ['id' => $user_id, 'openid' => $weUser['openid']];
+            }
+            $public->insert($pubData);
           } else {
             //添加公众号数据
-            $data['id'] = $public->insert(['openid' => $weUser['openid']]);
+            if (isset($pubData)) $pubData['openid'] = $weUser['openid'];
+            else $pubData = ['openid' => $weUser['openid']];
+            $data['id'] = $public->insert($pubData);
             //添加用户
             $user_id = $user->insert($data);
           }
